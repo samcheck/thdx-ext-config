@@ -1,0 +1,25 @@
+<aura:component
+  description="CPQ External Configurator Host"
+  implements="force:appHostable"
+  access="global"
+>
+  <aura:attribute name="configData" type="String" />
+  <aura:registerEvent name="configEvent" type="c:ConfigEvent" />
+
+  <lightning:card title="Custom Config">
+    <aura:set attribute="actions">
+      <lightning:button
+        variant="brand"
+        label="Save"
+        onclick="{!c.handleConfigSave}"
+      />
+    </aura:set>
+    <p class="slds-p-horizontal_small">
+      <lightning:textarea
+        name="rawConfig"
+        value="{!v.configData}"
+        label="Config Data"
+      />
+    </p>
+  </lightning:card>
+</aura:component>

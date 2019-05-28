@@ -1,0 +1,174 @@
+<apex:page sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0" standardStylesheets="false">
+  <html xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+
+  <head>
+    <meta charset="utf-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    <title>Salesforce CPQ External Config Map</title>
+    <!-- easyXDM.min.js compiled and minified JavaScript to communicate with Salesforce CPQ-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/easyXDM/2.4.20/easyXDM.min.js" crossorigin="anonymous"></script>
+    <!-- Load Leaflet Static Resource to display the map -->
+    <apex:includeScript value="{!URLFOR($Resource.leaflet, '/leaflet.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leaflet, '/leaflet.css')}" />
+    <!-- Load SLDS stylesheets -->
+    <apex:slds />
+  </head>
+
+
+  <body class="slds-scope">
+    <article class="slds-card" style="width: 100%; height: 700px">
+
+      <!-- Header -->
+      <div class="slds-card__header slds-grid">
+        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+          <div class="slds-media__figure">
+            <span class="slds-icon_container slds-icon-standard-location" title="Map">
+              <svg class="slds-icon slds-icon_medium" aria-hidden="true">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/standard-sprite/svg/symbols.svg#location"
+                />
+              </svg>
+            </span>
+          </div>
+          <div class="slds-media__body">
+            <h2 class="slds-text-heading_small">
+              <span>Delivery Configuration Map</span>
+            </h2>
+            <p class="slds-text-body_small slds-line-height_reset">Place start and end point markers on the map.</p>
+          </div>
+          <div class="slds-col slds-no-flex slds-grid slds-align-top">
+            <button onclick="resetMarkers()" class="slds-button slds-button_neutral slds-p-right_small">Reset Markers</button>
+            <button onclick="broadcast()" class="slds-button slds-button_brand">Save</button>
+          </div>
+        </header>
+      </div>
+      <!-- End Header -->
+
+      <div class="slds-card__body slds-card__body_inner slds-p-top_large">
+        <!-- This is it, all we need is a div to host our Leaflet map -->
+        <div id="map" style="width: 100%; height: 450px; border: 1px solid #1798c1;"></div>
+      </div>
+      
+    </article>
+  </body>
+
+
+  <!-- easyXDM and Leaflet map for VF for passing config data to/from Salesforc CPQ -->
+  <script type="text/javascript">
+    var mapMarkers = [];
+    var optionArray = [];
+    var optionId = 'a0d4P00000JzZMuQAN'; // This is the delivery charge option Id
+    var configObj;
+
+    // Set up the EasyXDM connection to Salesforce CPQ 
+    // to send and receive configuration data
+    var rpc = new easyXDM.Rpc({}, {
+      // method defined in Salesforce CPQ
+      remote: {
+        postMessage: {}
+      },
+
+      // method for receiving configuration JSON from Salesforce CPQ
+      local: {
+        postMessage: function (message) {
+          console.log("External Config JSON Recieved");
+          configObj = JSON.parse(message);
+          console.log(configObj);
+        }
+      }
+    });
+
+
+    // Initialize the Leaflet Map
+    var map = L.map('map').setView([37.789785, -122.396964], 15);
+
+    // Add the map tiles overlay from openstreetmap
+    L.tileLayer(
+      'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> Contributors',
+        maxZoom: 20,
+        minZoom: 1,
+      }).addTo(map);
+
+    // add a click handler to the Leaflet Map which adds and stores markers.
+    map.on("click", function (e) {
+      var marker = new L.Marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+      console.log(marker.getLatLng());
+      mapMarkers.push(marker);
+    });
+
+
+    // Broadcast function back to Salesforce CPQ to create the config
+    var broadcast = function () {
+      // Loop through the markers array and create product options for each segement
+      for (var i = 0; i < mapMarkers.length - 1; i++) {
+        createOption(mapMarkers[i].getLatLng(), mapMarkers[i + 1].getLatLng());
+      }
+      // Set the newly created options to the Delivery Options feature
+      configObj.product.optionConfigurations["Delivery Options"] = optionArray;
+
+      // Send the JSON configuration String back to Salesforce CPQ
+      rpc.postMessage(JSON.stringify(configObj));
+    }
+
+
+    function createOption(startPoint, endPoint) {
+      // calculate the distance based on the start and end lat / long
+      var distance = getDistanceFromLatLonInKm(startPoint.lat, startPoint.lng, endPoint.lat, endPoint.lng);
+
+      // create the new option 
+      var optData = {
+        "optionId": optionId,
+        "Quantity": distance, // kms
+        "selected": true,
+        "ProductName": "Delivery Charge (km)",
+        "index": optionArray.length,
+        "readOnly": {}, // this is where quote line data gets stored after they are created
+        configurationData: {
+          "Start__latitude__s": startPoint.lat,
+          "Start__longitude__s": startPoint.lng,
+          "End__latitude__s": endPoint.lat,
+          "End__longitude__s": endPoint.lng,
+        }
+      }
+      console.log(optData);
+      // add the new option to the array
+      optionArray.push(optData);
+    }
+
+
+    // Reset Markers and configuration data function
+    function resetMarkers() {
+      optionArray = [];
+      // remove markers from the leaflet map
+      mapMarkers.forEach(function (marker) {
+        map.removeLayer(marker);
+      });
+      mapMarkers = [];
+    }
+
+    // https://en.wikipedia.org/wiki/Haversine_formula
+    // Haversine formula to calculate distance based on lat and long
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+      var R = 6371; // mean radius of the earth in km
+      var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+      var dLon = deg2rad(lon2 - lon1);
+      var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var d = R * c; // Distance in km
+      return d;
+    }
+
+    // Convert degrees to radians
+    function deg2rad(deg) {
+      return deg * (Math.PI / 180)
+    }
+
+  </script>
+
+  </html>
+</apex:page>

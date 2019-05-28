@@ -1,0 +1,58 @@
+<apex:page sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0" standardStylesheets="false">
+  <html xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+
+  <head>
+    <meta charset="utf-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    <title>Salesforce CPQ External Config</title>
+    <!-- easyXDM.min.js compiled and minified JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/easyXDM/2.4.20/easyXDM.min.js" crossorigin="anonymous"></script>
+    <!-- adds the scripts to let us render Lightning components in Visualforce -->
+    <apex:includeLightning />
+  </head>
+
+
+  <body>
+    <!-- This is it, all we need is a div to host our LEX app -->
+    <div id="ext-config"></div>
+  </body>
+
+
+  <!-- easyXDM and Lightning for VF for passing config data to/from Salesforc CPQ -->
+  <script type="text/javascript">
+
+    var rpc = new easyXDM.Rpc({}, {
+      // method defined in Salesforce CPQ
+      remote: {
+        postMessage: {}
+      },
+
+      local: {
+        postMessage: function (message) {
+          console.log("External Config JSON Recieved");
+          console.log(message);
+          // Lightning out/for VF to host our custom config UI
+          $Lightning.use("c:CPQB_ExtConfigApp", function () {
+            $Lightning.createComponent("c:CPQB_ExtConfig", { configData: message },
+              "ext-config",
+              function () {
+                $A.eventService.addHandler({ "event": "c:ConfigEvent", "handler": broadcast });
+              }
+            );
+          });
+        }
+      }
+    });
+
+    // Broadcast function back to Salesforce CPQ to create the config
+    var broadcast = function (event) {
+      console.log(event);
+      var data = event.getParam("configData");
+      console.log(data);
+      rpc.postMessage(data);
+    }
+  </script>
+
+  </html>
+</apex:page>

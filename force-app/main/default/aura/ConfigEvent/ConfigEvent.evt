@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Salesforce CPQ Configuration Event">
+    <aura:attribute name="configData" type="String" description="JSON String from Salesforce CPQ configuration" access="global" />
+</aura:event>
+

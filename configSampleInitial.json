@@ -1,0 +1,80 @@
+{
+  "quote": {
+    "attributes": {
+      "type": "SBQQ__Quote__c",
+      "url": "/services/data/v45.0/sobjects/SBQQ__Quote__c/a0l4P00001KXiIwQAL"
+    },
+    "EditLinesFieldSetName__c": "Standard",
+    "SBQQ__NetAmount__c": 0,
+    "SBQQ__CustomerAmount__c": 0,
+    "SBQQ__PaymentTerms__c": "Net 30",
+    "SBQQ__Opportunity2__r": {
+      "attributes": {
+        "type": "Opportunity",
+        "url": "/services/data/v45.0/sobjects/Opportunity/0064P00000iOvW6QAK"
+      },
+      "SBQQ__PrimaryQuote__c": "a0l4P00001KXoOIQA1",
+      "AccountId": "0014P000026OC7bQAG",
+      "RecordTypeId": "0124P000000pq50QAA",
+      "Pricebook2Id": "01s4P000001PIk7QAG",
+      "Id": "0064P00000iOvW6QAK",
+      "CurrencyIsoCode": "USD"
+    },
+    "SBQQ__Account__r": {
+      "attributes": {
+        "type": "Account",
+        "url": "/services/data/v45.0/sobjects/Account/0014P000026OC7bQAG"
+      },
+      "SBQQ__RenewalPricingMethod__c": "Same",
+      "Id": "0014P000026OC7bQAG",
+      "SBQQ__RenewalModel__c": "Contract Based",
+      "CurrencyIsoCode": "USD",
+      "Name": "Chotchkies"
+    },
+    "SBQQ__ContractingMethod__c": "By Subscription End Date",
+    "Name": "Q-17000",
+    "SBQQ__Type__c": "Quote",
+    "SBQQ__SubscriptionTerm__c": 12,
+    "SBQQ__OrderByQuoteLineGroup__c": false,
+    "SBQQ__PricebookId__c": "01s4P000001PIk7QAG",
+    "RecordTypeId": "0124P000000pq56QAA",
+    "SBQQ__Account__c": "0014P000026OC7bQAG",
+    "SBQQ__WatermarkShown__c": true,
+    "SBQQ__StartDate__c": "2019-05-21",
+    "SBQQ__Status__c": "Draft",
+    "SBQQ__LineItemsGrouped__c": false,
+    "CurrencyIsoCode": "USD",
+    "SBQQ__ExpirationDate__c": "2019-05-28",
+    "SBQQ__Primary__c": false,
+    "SBQQ__Opportunity2__c": "0064P00000iOvW6QAK",
+    "SBQQ__LineItemCount__c": 0,
+    "Id": "a0l4P00001KXiIwQAL",
+    "SBQQ__Unopened__c": false
+  },
+  "product": {
+    "configuredProductId": "01t4P000007zPPMQA2",
+    "lineItemId": null,
+    "lineKey": null,
+    "configurationAttributes": {
+      "attributes": {
+        "type": "SBQQ__ProductOption__c"
+      }
+    },
+    "optionConfigurations": {
+      "Delivery Options": [
+        {
+          "productId": null,
+          "Quantity": 1,
+          "configurationData": {}
+        }
+      ]
+    },
+    "configurationData": {}
+  },
+  "products": [],
+  "readOnly": {},
+  "redirect": {
+    "auto": true,
+    "save": true
+  }
+}
